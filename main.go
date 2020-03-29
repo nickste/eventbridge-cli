@@ -60,6 +60,11 @@ func main() {
 				Aliases: []string{"j"},
 				Usage:   "Pretty JSON output",
 			},
+			&cli.BoolFlag{
+				Name:    "useSAM",
+				Aliases: []string{"s"},
+				Usage:   "Invoke local SAM application",
+			},
 		},
 	}
 
@@ -109,7 +114,7 @@ func run(c *cli.Context) error {
 
 	// poll SQS queue undefinitely
 	breaker := make(chan struct{})
-	go sqsClient.pollQueue(c.Context, breaker, c.Bool("prettyjson"))
+	go sqsClient.pollQueue(c.Context, breaker, c.Bool("prettyjson"), c.Bool("useSAM"))
 
 	// wait for a SIGINT (ie. CTRL-C)
 	// run cleanup when signal is received

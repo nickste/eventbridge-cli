@@ -49,6 +49,7 @@ GLOBAL OPTIONS:
    --eventbusname value, -b value  EventBridge Bus Name (default: "default")
    --eventpattern value, -e value  EventBridge event pattern (default: "{\"source\": [{\"anything-but\": [\"eventbridge-cli\"]}]}")
    --prettyjson, -j                Pretty JSON output (default: false)
+   --useSAM, -s                    Invokes a local serverless application in the current directory with the event from EventBridge
    --help, -h                      show help (default: false)
    --version, -v                   print the version (default: false)
 ```

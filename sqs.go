@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os/exec"
+	"os"
 
 	"github.com/TylerBrock/colorjson"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -73,7 +75,7 @@ func (s *sqsClient) deleteQueue(ctx context.Context) error {
 	return err
 }
 
-func (s *sqsClient) pollQueue(ctx context.Context, breaker <-chan struct{}, prettyJSON bool) error {
+func (s *sqsClient) pollQueue(ctx context.Context, breaker <-chan struct{}, prettyJSON bool, useSAM bool) error {
 	log.Printf("polling queue %s ...", s.queueURL)
 	log.Printf("press ctr+c to stop")
 
@@ -119,10 +121,31 @@ func (s *sqsClient) pollQueue(ctx context.Context, breaker <-chan struct{}, pret
 					pj, _ := f.Marshal(j)
 
 					log.Println(string(pj))
-					continue
+				} else {
+					log.Printf("%s", *m.Body)
 				}
 
-				log.Printf("%s", *m.Body)
+				if useSAM {
+					log.Printf("Invoking serverless application locally...\n")
+					log.Printf("Returned data: \n")
+
+					f, err := os.Create("events/event.json")
+			    if err != nil {
+			        fmt.Println(err)
+			    }
+			    f.WriteString(*m.Body)
+			    
+			    err = f.Close()
+			    if err != nil {
+			        fmt.Println(err)
+			    }
+
+					out, err := exec.Command("sam", "local", "invoke", "--event", "events/event.json").Output()
+			    if err != nil {
+			    	fmt.Println(err)
+					}
+					fmt.Printf("%s\n", out)
+			  }
 			}
 
 			// cleanup messages
